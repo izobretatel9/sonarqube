@@ -1,0 +1,67 @@
+version: '2'
+services:
+  postgresql: # 1
+    user: "${UID}:${GID}"
+    container_name: postgresql
+    image: docker.io/bitnami/postgresql:13
+    volumes:
+      - 'postgresql_data:/bitnami/postgresql'
+    environment:
+      # ALLOW_EMPTY_PASSWORD is recommended only for development.
+      - ALLOW_EMPTY_PASSWORD=yes
+      - POSTGRESQL_USERNAME=bn_sonarqube_user
+      - POSTGRESQL_DATABASE=bitnami_sonarqube_pass
+    networks:
+      - vm_net
+    restart: always
+  sonarqube: # 2
+    user: "${UID}:${GID}"
+    container_name: sonarqube
+    image: docker.io/bitnami/sonarqube:9
+    ports:
+      - '80:9000'
+    volumes:
+      - 'sonarqube_data:/bitnami/sonarqube'
+    depends_on:
+      - postgresql
+    environment:
+      # ALLOW_EMPTY_PASSWORD is recommended only for development.
+      - ALLOW_EMPTY_PASSWORD=yes
+      - SONARQUBE_DATABASE_HOST=postgresql
+      - SONARQUBE_DATABASE_PORT_NUMBER=5432
+      - SONARQUBE_DATABASE_USER=bn_sonarqube_user
+      - SONARQUBE_DATABASE_NAME=bitnami_sonarqube_pass
+    networks:
+      - vm_net
+    restart: always
+  cadvisor: # 3
+    container_name: cadvisor
+    image: gcr.io/cadvisor/cadvisor:v0.39.3
+    privileged: true
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    ports:
+      - 8080:8080
+    networks:
+      - vm_net
+    restart: always
+
+volumes:
+  postgresql_data:
+    driver: local
+    name: postgresqlstorage
+    driver_opts:
+      type: "ext4"
+      device: "/dev/vdb"
+  sonarqube_data:
+    driver: local
+    name: sonarqubestorage
+    driver_opts:
+      type: "ext4"
+      device: "/dev/vdc"
+networks:
+  vm_net:
