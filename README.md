@@ -57,7 +57,7 @@ password = bitnami
 ## P.s Изначальный создатель скрипта
 
 @izobretatel9
-## Образы были взяты
+## Источник образов
 ```
 https://hub.docker.com/r/bitnami/sonarqube/
 https://github.com/bitnami/bitnami-docker-sonarqube
